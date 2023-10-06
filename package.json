@@ -1,0 +1,32 @@
+{
+  "name": "webshaderwallpaper",
+  "version": "1.0.0",
+  "description": "A library for adding a shader wallpaper to the background of your website. ",
+  "main": "lib/WebShaderWallpaper.js",
+  "scripts": {
+    "build": "NODE_ENV=production node_modules/.bin/webpack --config webpack.config.js --progress"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielfvm/WebShaderWallpaper.git"
+  },
+  "keywords": [
+    "shader",
+    "wallpaper"
+  ],
+  "author": "DeanCode",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/danielfvm/WebShaderWallpaper/issues"
+  },
+  "homepage": "https://github.com/danielfvm/WebShaderWallpaper#readme",
+  "devDependencies": {
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.2.2",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "ts-loader": "^9.4.4",
+    "webpack": "^5.88.2"
+  }
+}
