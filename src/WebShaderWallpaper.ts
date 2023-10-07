@@ -1,22 +1,4 @@
 export namespace WebShaderWallpaper {
-  export interface Config {
-    allowMouse: boolean;
-    resolution: number;
-    target: HTMLCanvasElement;
-    speedFactor: number;
-    fullscreen: boolean;
-    autoUpdate: boolean;
-  };
-
-  const DefaultConfig: Config = {
-    allowMouse: true,
-    resolution: 2,
-    speedFactor: 1,
-    target: null,
-    fullscreen: true,
-    autoUpdate: true,
-  }
-
   const vertShader = `
       attribute vec2 coords;
       void main(void) {
@@ -36,10 +18,9 @@ export namespace WebShaderWallpaper {
     return shader;
   }
 
-  export class Wallpaper {
+  class Wallpaper {
     private gl: WebGLRenderingContext;
     private canvas: HTMLCanvasElement;
-    private config: Config;
 
     private uniformResolution: WebGLUniformLocation;
     private uniformTime: WebGLUniformLocation;
@@ -49,6 +30,8 @@ export namespace WebShaderWallpaper {
     private vert: WebGLShader;
     private frag: WebGLShader;
 
+    private target: HTMLElement;
+
     private mouseX: number;
     private mouseY: number;
 
@@ -57,38 +40,32 @@ export namespace WebShaderWallpaper {
     private eventHandlerResize = this.resize.bind(this);
     private eventHandlerMouse = this.mouse.bind(this);
 
-    constructor(fragShader: string, config: Config = DefaultConfig) {
-      this.config = config;
-      this.config.allowMouse ??= DefaultConfig.allowMouse;
-      this.config.autoUpdate ??= DefaultConfig.autoUpdate;
-      this.config.fullscreen ??= DefaultConfig.fullscreen;
-      this.config.speedFactor ??= DefaultConfig.speedFactor;
-      this.config.target ??= DefaultConfig.target;
-      this.config.resolution ??= DefaultConfig.resolution;
+    private quality: number = 2;
+    private speed: number = 1;
 
+    constructor(fragShader: string, target: HTMLElement) {
       // Get gl context from canvas
-      if (config?.target) {
-        if (this.canvas.tagName !== "canvas") {
-          throw new Error("Target canvas is not a canvas element");
-        }
-        this.canvas = config.target;
-      } else {
-        this.canvas = document.createElement("canvas");
-        document.body.appendChild(this.canvas);
+      this.canvas = document.createElement("canvas");
+      this.target = target;
+
+      target.append(this.canvas);
+
+      if (target !== document.body) {
+        const style = getComputedStyle(target);
+        const radius = style.borderRadius || 0;
+        target.style.clipPath = `inset(0 0 0 0 round ${radius})`;
       }
 
-      if (this.config.fullscreen) {
-        this.canvas.style.position = "fixed";
-        this.canvas.style.left = "0%";
-        this.canvas.style.right = "0%";
-        this.canvas.style.top = "0%";
-        this.canvas.style.bottom = "0%";
-        this.canvas.style.width = "100%";
-        this.canvas.style.height = "100%";
-        this.canvas.style.zIndex = "-1";
-      }
+      this.canvas.style.position = "fixed";
+      this.canvas.style.left = "0%";
+      this.canvas.style.right = "0%";
+      this.canvas.style.top = "0%";
+      this.canvas.style.bottom = "0%";
+      this.canvas.style.width = "100%";
+      this.canvas.style.height = "100%";
+      this.canvas.style.zIndex = "-1";
 
-      this.resize();
+      this.updateAttributes();
 
       this.gl = (this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl")) as WebGLRenderingContext;
 
@@ -122,56 +99,122 @@ export namespace WebShaderWallpaper {
       window.addEventListener("resize", this.eventHandlerResize);
       window.addEventListener("mousemove", this.eventHandlerMouse);
 
-      const refresh = () => {
-        this.update();
-        if (this.running)
-          requestAnimationFrame(refresh);
-      };
+      const observer = new MutationObserver((_) => {
+        this.updateAttributes();
+      });
 
-      if (this.config.autoUpdate) {
-        refresh();
-      }
+      observer.observe(target, {
+        subtree: false,
+        childList: false,
+        attributes: true,
+        attributeFilter: ["data-shader", "data-shader-quality", "data-shader-speed"],
+      });
+
+      this.update();
+    }
+
+    private updateAttributes() {
+      this.quality = Number(this.target.attributes.getNamedItem("data-shader-quality")?.value) || this.quality;
+      this.speed = Number(this.target.attributes.getNamedItem("data-shader-speed")?.value) || this.speed;
+
+      if (!this.target.attributes.getNamedItem("data-shader")?.value)
+        this.destroy();
+
+      this.resize();
+      console.log("resize", this, this.speed);
     }
 
     private resize() {
-      if (this.config.fullscreen) {
-        this.canvas.width = window.innerWidth / this.config.resolution;
-        this.canvas.height = window.innerHeight / this.config.resolution;
-      }
+      this.canvas.width = window.innerWidth / this.quality;
+      this.canvas.height = window.innerHeight / this.quality;
     }
 
     private mouse(e: MouseEvent) {
-      if (!this.config.allowMouse) {
-        this.mouseX = window.innerWidth / 2;
-        this.mouseY = window.innerHeight / 2;
-        return;
-      }
-
       this.mouseX = e.clientX;
       this.mouseY = e.clientY;
     }
 
-    public update() {
-      const {width, height} = this.canvas;
+    private update() {
+      const { width, height } = this.canvas;
 
-      this.gl.uniform2f(this.uniformMouse, this.mouseX / width / this.config.resolution, 1 - this.mouseY / height / this.config.resolution);
+      if (!this.running)
+        return;
+
+      this.gl.uniform2f(this.uniformMouse, this.mouseX / width / this.quality, 1 - this.mouseY / height / this.quality);
       this.gl.uniform2f(this.uniformResolution, width, height);
-      this.gl.uniform1f(this.uniformTime, performance.now() / 1000 * this.config.speedFactor);
+      this.gl.uniform1f(this.uniformTime, performance.now() / 1000 * this.speed);
 
       this.gl.viewport(0, 0, width, height);
       this.gl.clearColor(0, 0, 0, 0);
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT);
       this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+
+      requestAnimationFrame(this.update.bind(this));
     }
 
     destroy() {
+      (this.target as any).shaderWallpaper = undefined;
+
+      this.running = false;
+
       this.gl.deleteProgram(this.pid);
       this.gl.deleteShader(this.vert);
       this.gl.deleteShader(this.frag);
-
-      this.running = false;
+      this.canvas.remove();
 
       window.removeEventListener("resize", this.eventHandlerResize);
       window.removeEventListener("mousemove", this.eventHandlerMouse);
     }
   }
+
+  async function getCodeFromURL(url: string): Promise<string> {
+    // link to glslsandbox website is a special case
+    if (url.includes("glslsandbox.com") && url.includes("/e#")) {
+      url = url.replace("/e#", "/item/");
+      const res = await fetch(url);
+      const text = await res.json();
+
+      if (typeof text.code === "undefined")
+        throw new Error("Could not get shader code");
+
+      return text.code;
+    }
+
+    // otherwise we expect a link to a source file
+    const res = await fetch(url);
+    return await res.text();
+  }
+
+  async function handleHTMLElement(target: HTMLElement) {
+    if (target == null)
+      return;
+
+    const url = target.attributes.getNamedItem("data-shader")?.value;
+
+    if (url == null)
+      return;
+
+    if ((target as any)?.shaderWallpaper != null)
+      (target as any).shaderWallpaper.destroy();
+    else
+      (target as any).shaderWallpaper = new Wallpaper(await getCodeFromURL(url), target);
+  }
+
+  function init() {
+    const observer = new MutationObserver((mutationList) => {
+      mutationList.forEach((mutation) => handleHTMLElement(mutation.target as HTMLElement));
+    });
+
+    observer.observe(document.body, {
+      subtree: true,
+      childList: false,
+      attributeFilter: ["data-shader"]
+    });
+
+    console.log("start");
+    document.querySelectorAll('[data-shader]').forEach((e) => handleHTMLElement(e as HTMLElement));
+    document.removeEventListener("DOMContentLoaded", init);
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
 }
