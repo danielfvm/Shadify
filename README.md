@@ -1,14 +1,14 @@
 # Shadify
 A library for adding a shader wallpaper to the background of your website.
-You can find a live example [here](https://danielfvm.github.io/WebShaderWallpaper/example/) and you can find the code at `example/`
+You can find a live example [here](https://danielfvm.github.io/Shadify/example/) and you can find the code at `example/`
 
-![untitled](https://github.com/danielfvm/WebShaderWallpaper/assets/23420640/bee4a957-7d08-4db6-849c-7e7ff3bdd1d8)
+![untitled](https://github.com/danielfvm/Shadify/assets/23420640/bee4a957-7d08-4db6-849c-7e7ff3bdd1d8)
 
 
 ## Usage
 Download the latest release and include it into your project.
 ```html
-<script type="text/javascript" src="./WebShaderWallpaper.js"></script>
+<script type="text/javascript" src="./Shadify.js"></script>
 ```
 
 To add a shader to the background or any other div add `data-shader` with a link to a [glslsandbox.com](https://glslsandbox.com/) shader or to your own shader source file.
