@@ -11,18 +11,26 @@ Download the latest release and include it into your project.
 <script type="text/javascript" src="./WebShaderWallpaper.js"></script>
 ```
 
+To add a shader to the background or any other div add `data-shader` with a link to a [glslsandbox.com](https://glslsandbox.com/) shader or to your own shader source file.
+```html
+<body data-shader="https://glslsandbox.com/e#106611.0">
+...
+</body>
+```
 
-The following code creates a new wallpaper that automaticly is set as the background (z-index: -1).
-```js
-const wallpaper = new WebShaderWallpaper.Wallpaper(fragShaderCode, options);
+Additionally you can set `data-shader-speed` (1.0 default) and `data-shader-quality` (2.0 default) settings. Here an example with the same shader
+but at twice the speed and a quarter the quality. 
+```html
+<div data-shader="https://glslsandbox.com/e#106611.0" data-shader-speed="2.0" data-shader-quality="4.0">
+....
+</div>
 ```
-You can find example glsl shader programs at [glslsandbox.com](https://glslsandbox.com/) and [shadertoy.com](https://www.shadertoy.com/).
-You can set the following options:
-```
-allowMouse: boolean        // Enable it for mouse support in shaders
-resolution: number         // Default 2, Increase this number to reduce the size rendered
-target: HTMLCanvasElement  // You can set your own canvas if it already exist
-speedFactor: number        // Default 1, 
-fullscreen: boolean        // If enabled will put the canvas in the background in fullscreen
-autoUpdate: boolean        // Enable it to automaticly update the screen, otherwise call wallpaper.update yourself
-```
+
+## Features
+* Shaders can directly be loaded from [glslsandbox.com](https://glslsandbox.com/)
+* Support for setting shader quality and speed
+* Supports mouse input
+* Attributes can be changed using JavaScript at runtime
+
+## Planned
+* Add support for custom uniform values that can be passed to the shaders
