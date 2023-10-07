@@ -1,3 +1,3 @@
-import { WebShaderWallpaper } from "./WebShaderWallpaper";
-export default WebShaderWallpaper;
-Object.assign(module.exports, WebShaderWallpaper);
+import { Shadify } from "./Shadify";
+export default Shadify;
+Object.assign(module.exports, Shadify);

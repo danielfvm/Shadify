@@ -1,25 +1,26 @@
 {
-  "name": "webshaderwallpaper",
-  "version": "1.0.0",
-  "description": "A library for adding a shader wallpaper to the background of your website. ",
-  "main": "lib/WebShaderWallpaper.js",
+  "name": "shadify",
+  "version": "1.0.1",
+  "description": "A library for adding shaders to the background of your website.",
+  "main": "lib/shadify.js",
   "scripts": {
     "build": "NODE_ENV=production node_modules/.bin/webpack --config webpack.config.js --progress"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/danielfvm/WebShaderWallpaper.git"
+    "url": "git+https://github.com/danielfvm/Shadify.git"
   },
   "keywords": [
     "shader",
-    "wallpaper"
+    "wallpaper",
+    "animations"
   ],
   "author": "DeanCode",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/danielfvm/WebShaderWallpaper/issues"
+    "url": "https://github.com/danielfvm/Shadify/issues"
   },
-  "homepage": "https://github.com/danielfvm/WebShaderWallpaper#readme",
+  "homepage": "https://github.com/danielfvm/Shadify#readme",
   "devDependencies": {
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2",

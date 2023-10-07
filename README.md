@@ -1,6 +1,6 @@
 # Shadify
-A library for adding a shader wallpaper to the background of your website.
-You can find a live example [here](https://danielfvm.github.io/Shadify/example/) and you can find the code at `example/`
+A library for adding a shader wallpaper to the background of your website or any of your divs.
+You can find a live example [here](https://danielfvm.github.io/Shadify/example/) and you can find the code in the `example/` folder.
 
 ![untitled](https://github.com/danielfvm/Shadify/assets/23420640/bee4a957-7d08-4db6-849c-7e7ff3bdd1d8)
 
@@ -31,6 +31,16 @@ but at twice the speed and a quarter the quality.
 * Support for setting shader quality and speed
 * Supports mouse input
 * Attributes can be changed using JavaScript at runtime
+* Access the shader uniforms using `myDiv.shadify.getUniform(name)`
 
 ## Planned
-* Add support for custom uniform values that can be passed to the shaders
+* Support links from `shadertoy.com`
+
+## Build library
+Run following commands to build this library yourself. You will find the output at `dist/`.
+```bash
+git clone https://github.com/danielfvm/Shadify.git
+cd Shadify
+npm install
+npm run build
+```

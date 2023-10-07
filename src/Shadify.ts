@@ -1,4 +1,4 @@
-export namespace WebShaderWallpaper {
+export namespace Shadify {
   const vertShader = `
       attribute vec2 coords;
       void main(void) {
@@ -6,21 +6,9 @@ export namespace WebShaderWallpaper {
       }
   `;
 
-  function createShader(gl: WebGLRenderingContext, sourceCode: string, type: number): WebGLShader {
-    const shader = gl.createShader(type);
-    gl.shaderSource(shader, sourceCode);
-    gl.compileShader(shader);
-
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      const info = gl.getShaderInfoLog(shader);
-      throw `Could not compile WebGL program. \n\n${info}`;
-    }
-    return shader;
-  }
-
   class Wallpaper {
-    private gl: WebGLRenderingContext;
-    private canvas: HTMLCanvasElement;
+    public gl: WebGLRenderingContext;
+    public canvas: HTMLCanvasElement;
 
     private uniformResolution: WebGLUniformLocation;
     private uniformTime: WebGLUniformLocation;
@@ -40,16 +28,16 @@ export namespace WebShaderWallpaper {
     private eventHandlerResize = this.resize.bind(this);
     private eventHandlerMouse = this.mouse.bind(this);
 
-    private quality: number = 2;
-    private speed: number = 1;
+    private _quality: number = 2;
+    public speed: number = 1;
 
     constructor(fragShader: string, target: HTMLElement) {
-      // Get gl context from canvas
       this.canvas = document.createElement("canvas");
       this.target = target;
 
       target.append(this.canvas);
 
+      // Setting this in body would break the fullscreen look
       if (target !== document.body) {
         const style = getComputedStyle(target);
         const radius = style.borderRadius || 0;
@@ -65,8 +53,10 @@ export namespace WebShaderWallpaper {
       this.canvas.style.height = "100%";
       this.canvas.style.zIndex = "-1";
 
+      // Fetches the attributes and sets quality and speed if given
       this.updateAttributes();
 
+      // Get gl context from canvas
       this.gl = (this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl")) as WebGLRenderingContext;
 
       // Create shader program
@@ -119,9 +109,6 @@ export namespace WebShaderWallpaper {
 
       if (!this.target.attributes.getNamedItem("data-shader")?.value)
         this.destroy();
-
-      this.resize();
-      console.log("resize", this, this.speed);
     }
 
     private resize() {
@@ -152,7 +139,21 @@ export namespace WebShaderWallpaper {
       requestAnimationFrame(this.update.bind(this));
     }
 
-    destroy() {
+    /**
+     * Returns a WebGLUniformLocation for the given name in the fragment shader.
+     * @param {string} name
+     * @returns {WebGLUniformLocation}
+     */
+    public getUniform(name: string): WebGLUniformLocation {
+      return this.gl.getUniformLocation(this.pid, name);
+    }
+
+    /**
+     * This function has to be called to clean up the WebGL context.
+     * It is also called when the element is removed from the DOM.
+     * @returns {void}
+     */
+    public destroy(): void {
       (this.target as any).shaderWallpaper = undefined;
 
       this.running = false;
@@ -165,8 +166,42 @@ export namespace WebShaderWallpaper {
       window.removeEventListener("resize", this.eventHandlerResize);
       window.removeEventListener("mousemove", this.eventHandlerMouse);
     }
+
+    get quality(): number {
+      return this._quality;
+    }
+
+    set quality(value: number) {
+      this._quality = value;
+      this.resize();
+    }
   }
 
+  /** 
+   * Helper function for creating a WebGLShader in Wallpaper class
+   * @param {WebGLRenderingContext} gl
+   * @param {string} sourceCode
+   * @param {number} type
+   * @returns {WebGLShader}
+   */
+  function createShader(gl: WebGLRenderingContext, sourceCode: string, type: number): WebGLShader {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, sourceCode);
+    gl.compileShader(shader);
+
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      const info = gl.getShaderInfoLog(shader);
+      throw `Could not compile WebGL program. \n\n${info}`;
+    }
+    return shader;
+  }
+
+  /**
+   * Fetches the shader code from the given URL.
+   * If URL is from glslsandbox.com, it will fetch the code from the item page.
+   * @param {string} url
+   * @returns {Promise<string>}
+   */
   async function getCodeFromURL(url: string): Promise<string> {
     // link to glslsandbox website is a special case
     if (url.includes("glslsandbox.com") && url.includes("/e#")) {
@@ -180,12 +215,17 @@ export namespace WebShaderWallpaper {
       return text.code;
     }
 
-    // otherwise we expect a link to a source file
+    // otherwise we expect a link to a source file and return the code
     const res = await fetch(url);
     return await res.text();
   }
 
-  async function handleHTMLElement(target: HTMLElement) {
+  /**
+   * Helper function for handling elements with the "data-shader" attribute.
+   * @param {HTMLElement} target
+   * @returns {void}
+   */
+  async function handleHTMLElement(target: HTMLElement): Promise<void> {
     if (target == null)
       return;
 
@@ -194,13 +234,17 @@ export namespace WebShaderWallpaper {
     if (url == null)
       return;
 
-    if ((target as any)?.shaderWallpaper != null)
-      (target as any).shaderWallpaper.destroy();
+    if ((target as any)?.shadify != null)
+      (target as any).shadify.destroy();
     else
-      (target as any).shaderWallpaper = new Wallpaper(await getCodeFromURL(url), target);
+      (target as any).shadify = new Wallpaper(await getCodeFromURL(url), target);
   }
 
-  function init() {
+  /**
+   * Initializes Shadify.
+   * @returns {void}
+   */
+  function init(): void {
     const observer = new MutationObserver((mutationList) => {
       mutationList.forEach((mutation) => handleHTMLElement(mutation.target as HTMLElement));
     });
@@ -211,8 +255,9 @@ export namespace WebShaderWallpaper {
       attributeFilter: ["data-shader"]
     });
 
-    console.log("start");
+    // Handle elements with the "data-shader" attribute
     document.querySelectorAll('[data-shader]').forEach((e) => handleHTMLElement(e as HTMLElement));
+
     document.removeEventListener("DOMContentLoaded", init);
   }
 

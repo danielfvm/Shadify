@@ -3,14 +3,14 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Example Shader Wallpaper</title>
-		<script type="text/javascript" src="../lib/WebShaderWallpaper.js"></script>
+		<title>Shadify</title>
+		<script type="text/javascript" src="../lib/Shadify.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/lil-gui@0.18"></script>
 	</head>
 
-	<body data-shader="https://glslsandbox.com/e#106580.0" data-shader-quality="2" data-shader-speed="0.1">
-		<h1>Example Shader Wallpaper</h1>
-		<div class="test" data-shader="https://glslsandbox.com/e#106606.0" data-shader-quality="8">
+	<body data-shader="https://glslsandbox.com/e#106580.0" id="test">
+		<h1>Welcome to Shadify!</h1>
+		<div class="test" data-shader="https://glslsandbox.com/e#106606.0" data-shader-quality="8" data-shader-speed="2">
 			<h1>Hello World!</h1>
 			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
 		</div>
@@ -23,7 +23,6 @@
 		}
 
 		.test {
-			background: transparent;
 			color: white;
 			width: 1000px;
 			height: 800px;
@@ -32,6 +31,20 @@
 			padding-left: 0px;
 			font-size: 40px;
 			padding: 50px;
+			transition: background 0.1s;
 		}
 	</style>
+
+	<script>
+		const gui = new lil.GUI();
+		const background = document.querySelector('#test');
+
+		const options = {
+			quality: 2.0,
+			speed: 1.0,
+		};
+
+		gui.add(options, 'quality').onFinishChange(() => background.shadify.quality = options.quality);
+		gui.add(options, 'speed').onFinishChange(() => background.shadify.speed = options.speed);
+	</script>
 </html>

@@ -1,4 +1,4 @@
-var libraryName = 'WebShaderWallpaper';
+var libraryName = 'Shadify';
 var outputFile = libraryName + '.js';
 
 module.exports = {
