@@ -35,6 +35,9 @@ but at twice the speed and a quarter the quality.
 
 ## Planned
 * Support links from `shadertoy.com`
+* Improved README.md
+* Documentation
+* Reuse same shaders
 
 ## Build library
 Run following commands to build this library yourself. You will find the output at `dist/`.
