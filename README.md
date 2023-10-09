@@ -1,3 +1,5 @@
+![Repository size](https://img.shields.io/github/repo-size/danielfvm/Shadify?color=39d45f) [![GitHub last commit](https://img.shields.io/github/last-commit/danielfvm/Shadify?color=39d45f)](https://github.com/danielfvm/Shadify/commits/master) ![License](https://img.shields.io/badge/license-MIT-39d45f) [![Stargazers](https://img.shields.io/github/stars/danielfvm/Shadify?color=39d45f&logo=github)](https://github.com/danielfvm/Shadify/stargazers)
+
 # Shadify
 A library for adding a shader wallpaper to the background of your website or any of your divs.
 You can find a live example [here](https://danielfvm.github.io/Shadify/example/) and you can find the code in the `example/` folder.
