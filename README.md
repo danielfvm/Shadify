@@ -8,9 +8,8 @@ You can find a live example [here](https://danielfvm.github.io/Shadify/example/)
 
 
 ## Usage
-Download the latest release and include it into your project.
-```html
-<script type="text/javascript" src="./Shadify.js"></script>
+Include shadify in your project.
+```html<script type="text/javascript" src="https://unpkg.com/shadify@1.0.1/lib/Shadify.js"></script>
 ```
 
 To add a shader to the background or any other div add `data-shader` with a link to a [glslsandbox.com](https://glslsandbox.com/) shader or to your own shader source file.
