@@ -32,45 +32,36 @@ export namespace Shadify {
     public speed: number = 1;
 
     constructor(fragShader: string, target: HTMLElement) {
-      this.canvas = document.createElement("canvas");
       this.target = target;
 
-      target.append(this.canvas);
+      if (this.target.tagName === "CANVAS") {
+        this.canvas = this.target as HTMLCanvasElement;
+      } else {
+        this.canvas = document.createElement("canvas");
+        target.append(this.canvas);
 
-      // Setting this in body would break the fullscreen look
-      if (target !== document.body) {
-        const style = getComputedStyle(target);
-        const radius = style.borderRadius || 0;
-        target.style.clipPath = `inset(0 0 0 0 round ${radius})`;
+        // Setting this in body would break the fullscreen look
+        if (target !== document.body) {
+          const style = getComputedStyle(target);
+          const radius = style.borderRadius || 0;
+          target.style.clipPath = `inset(0 0 0 0 round ${radius})`;
+        }
+
+        this.canvas.style.position = "fixed";
+        this.canvas.style.left = "0%";
+        this.canvas.style.right = "0%";
+        this.canvas.style.top = "0%";
+        this.canvas.style.bottom = "0%";
+        this.canvas.style.width = "100%";
+        this.canvas.style.height = "100%";
       }
-
-      this.canvas.style.position = "fixed";
-      this.canvas.style.left = "0%";
-      this.canvas.style.right = "0%";
-      this.canvas.style.top = "0%";
-      this.canvas.style.bottom = "0%";
-      this.canvas.style.width = "100%";
-      this.canvas.style.height = "100%";
-      this.canvas.style.zIndex = "-1";
 
       // Fetches the attributes and sets quality and speed if given
       this.updateAttributes();
 
       // Get gl context from canvas
       this.gl = (this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl")) as WebGLRenderingContext;
-
-      // Create shader program
-      this.pid = this.gl.createProgram();
-
-      // Compile vertex shader
-      this.vert = createShader(this.gl, vertShader, this.gl.VERTEX_SHADER);
-      this.gl.attachShader(this.pid, this.vert);
-
-      // Compile fragment shader
-      this.frag = createShader(this.gl, fragShader, this.gl.FRAGMENT_SHADER);
-      this.gl.attachShader(this.pid, this.frag);
-      this.gl.linkProgram(this.pid);
-      this.gl.useProgram(this.pid);
+      this.loadShader(fragShader);
 
       // Create buffer
       let array = new Float32Array([-1, 3, -1, -1, 3, -1]);
@@ -80,11 +71,6 @@ export namespace Shadify {
       let al = this.gl.getAttribLocation(this.pid, "coords");
       this.gl.vertexAttribPointer(al, 2, this.gl.FLOAT, false, 0, 0);
       this.gl.enableVertexAttribArray(al);
-
-      // Read uniforms
-      this.uniformResolution = this.gl.getUniformLocation(this.pid, "resolution");
-      this.uniformTime = this.gl.getUniformLocation(this.pid, "time");
-      this.uniformMouse = this.gl.getUniformLocation(this.pid, "mouse");
 
       window.addEventListener("resize", this.eventHandlerResize);
       window.addEventListener("mousemove", this.eventHandlerMouse);
@@ -103,17 +89,46 @@ export namespace Shadify {
       this.update();
     }
 
+    public loadShader(fragShader: string) {
+      // Before initializing new shader, remove old ones if present
+      if (this.pid)  this.gl.deleteProgram(this.pid);
+      if (this.vert) this.gl.deleteShader(this.vert);
+      if (this.frag) this.gl.deleteShader(this.frag);
+
+      // Create shader program
+      this.pid = this.gl.createProgram();
+
+      // Compile vertex shader
+      this.vert = createShader(this.gl, vertShader, this.gl.VERTEX_SHADER);
+      this.gl.attachShader(this.pid, this.vert);
+
+      // Compile fragment shader
+      this.frag = createShader(this.gl, fragShader, this.gl.FRAGMENT_SHADER);
+      this.gl.attachShader(this.pid, this.frag);
+      this.gl.linkProgram(this.pid);
+      this.gl.useProgram(this.pid);
+
+      // Read uniforms
+      this.uniformResolution = this.gl.getUniformLocation(this.pid, "resolution");
+      this.uniformTime = this.gl.getUniformLocation(this.pid, "time");
+      this.uniformMouse = this.gl.getUniformLocation(this.pid, "mouse");
+    }
+
     private updateAttributes() {
       this.quality = Number(this.target.attributes.getNamedItem("data-shader-quality")?.value) || this.quality;
       this.speed = Number(this.target.attributes.getNamedItem("data-shader-speed")?.value) || this.speed;
+      this.canvas.style.zIndex = this.target.attributes.getNamedItem("data-shader-z-index")?.value || "-1";
 
-      if (!this.target.attributes.getNamedItem("data-shader")?.value)
+      if (!this.target.attributes.getNamedItem("data-shader")?.value) {
         this.destroy();
+      }
     }
 
     private resize() {
-      this.canvas.width = window.innerWidth / this.quality;
-      this.canvas.height = window.innerHeight / this.quality;
+      if (this.target.tagName !== "CANVAS") {
+        this.canvas.width = window.innerWidth / this.quality;
+        this.canvas.height = window.innerHeight / this.quality;
+      }
     }
 
     private mouse(e: MouseEvent) {
@@ -122,7 +137,7 @@ export namespace Shadify {
     }
 
     private update() {
-      const { width, height } = this.canvas;
+      const {width, height} = this.canvas;
 
       if (!this.running)
         return;
@@ -154,7 +169,7 @@ export namespace Shadify {
      * @returns {void}
      */
     public destroy(): void {
-      (this.target as any).shaderWallpaper = undefined;
+      (this.target as any).shadify = undefined;
 
       this.running = false;
 
@@ -162,6 +177,10 @@ export namespace Shadify {
       this.gl.deleteShader(this.vert);
       this.gl.deleteShader(this.frag);
       this.canvas.remove();
+
+      this.pid = null;
+      this.vert = null;
+      this.frag = null;
 
       window.removeEventListener("resize", this.eventHandlerResize);
       window.removeEventListener("mousemove", this.eventHandlerMouse);
@@ -231,13 +250,18 @@ export namespace Shadify {
 
     const url = target.attributes.getNamedItem("data-shader")?.value;
 
-    if (url == null)
+    if (url == null || url.trim().length == 0)
       return;
 
-    if ((target as any)?.shadify != null)
-      (target as any).shadify.destroy();
-    else
+    if ((target as any)?.shadify != null) {
+      if ((target as any).shadify.target == target)
+        (target as any).shadify.loadShader(await getCodeFromURL(url));
+      else
+        (target as any).shadify.destroy();
+    } else {
+      console.log(target);
       (target as any).shadify = new Wallpaper(await getCodeFromURL(url), target);
+    }
   }
 
   /**
@@ -246,7 +270,12 @@ export namespace Shadify {
    */
   function init(): void {
     const observer = new MutationObserver((mutationList) => {
-      mutationList.forEach((mutation) => handleHTMLElement(mutation.target as HTMLElement));
+      console.log(mutationList,  mutationList
+        .filter(x => mutationList.filter(y => y.target == x.target).length >= mutationList.length-1));
+
+      mutationList
+        .filter(x => mutationList.filter(y => y.target == x.target).length >= mutationList.length-1) // filter duplicate targets
+        .forEach((mutation) => handleHTMLElement(mutation.target as HTMLElement));
     });
 
     observer.observe(document.body, {
