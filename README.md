@@ -1,13 +1,13 @@
 # Shadify
-![Repository size](https://img.shields.io/github/repo-size/danielfvm/Shadify?color=39d45f) 
-[![GitHub last commit](https://img.shields.io/github/last-commit/danielfvm/Shadify?color=39d45f)](https://github.com/danielfvm/Shadify/commits/master) 
+![Repository size](https://img.shields.io/github/repo-size/ItsKaedeV/Shadify?color=39d45f) 
+[![GitHub last commit](https://img.shields.io/github/last-commit/ItsKaedeV/Shadify?color=39d45f)](https://github.com/ItsKaedeV/Shadify/commits/master) 
 ![License](https://img.shields.io/badge/license-MIT-39d45f) 
-[![Stargazers](https://img.shields.io/github/stars/danielfvm/Shadify?color=39d45f&logo=github)](https://github.com/danielfvm/Shadify/stargazers)
+[![Stargazers](https://img.shields.io/github/stars/ItsKaedeV/Shadify?color=39d45f&logo=github)](https://github.com/ItsKaedeV/Shadify/stargazers)
 
 A library for adding a shader wallpaper to the background of your website or any of your divs.
-You can find a live example [here](https://danielfvm.github.io/Shadify/example/) and you can find the code in the `example/` folder.
+You can find a live example [here](https://ItsKaedeV.github.io/Shadify/example/) and you can find the code in the `example/` folder.
 
-![untitled](https://github.com/danielfvm/Shadify/assets/23420640/bee4a957-7d08-4db6-849c-7e7ff3bdd1d8)
+![untitled](https://github.com/ItsKaedeV/Shadify/assets/23420640/bee4a957-7d08-4db6-849c-7e7ff3bdd1d8)
 
 
 ## Usage
@@ -47,7 +47,7 @@ but at twice the speed and a quarter the quality.
 ## Build library
 Run following commands to build this library yourself. You will find the output at `dist/`.
 ```bash
-git clone https://github.com/danielfvm/Shadify.git
+git clone https://github.com/ItsKaedeV/Shadify.git
 cd Shadify
 npm install
 npm run build
